@@ -2,45 +2,36 @@ extract bible
 
 directory <book_bible> :
 	JSON file <genese.json> :
-		{
-			"name" : "Genese",
-			"code_name_book" : "LSG",
-			"chapters" : [
-				{
-					"verses" : [
-						{"1" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"2" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"3" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"4" : "Lorem ispum sit amet lorem ipsum lorem."}
-					]
-				},
-				{
-					"verses" : [
-						{"1" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"2" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"3" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"4" : "Lorem ispum sit amet lorem ipsum lorem."}
-					]
-				},
-				{
-					"verses" : [
-						{"1" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"2" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"3" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"4" : "Lorem ispum sit amet lorem ipsum lorem."}
-					]
-				},
-				{
-					"verses" : [
-						{"1" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"2" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"3" : "Lorem ispum sit amet lorem ipsum lorem."},
-						{"4" : "Lorem ispum sit amet lorem ipsum lorem."}
-					]
-				},
-			]
-		}
-
+{
+    "name": "Genese",
+    "code_name_book": "LSG",
+    "chapters": {
+        "1": {
+            "1": "Lorem ispum sit amet lorem ipsum lorem.",
+            "2": "Lorem ispum sit amet lorem ipsum lorem.",
+            "3": "Lorem ispum sit amet lorem ipsum lorem.",
+            "4": "Lorem ispum sit amet lorem ipsum lorem."
+        },
+        "2": {
+            "1": "Lorem ispum sit amet lorem ipsum lorem.",
+            "2": "Lorem ispum sit amet lorem ipsum lorem.",
+            "3": "Lorem ispum sit amet lorem ipsum lorem.",
+            "4": "Lorem ispum sit amet lorem ipsum lorem."
+        },
+        "3": {
+            "1": "Lorem ispum sit amet lorem ipsum lorem.",
+            "2": "Lorem ispum sit amet lorem ipsum lorem.",
+            "3": "Lorem ispum sit amet lorem ipsum lorem.",
+            "4": "Lorem ispum sit amet lorem ipsum lorem."
+        },
+        "4": {
+            "1": "Lorem ispum sit amet lorem ipsum lorem.",
+            "2": "Lorem ispum sit amet lorem ipsum lorem.",
+            "3": "Lorem ispum sit amet lorem ipsum lorem.",
+            "4": "Lorem ispum sit amet lorem ipsum lorem."
+        }
+    }
+}
 
 {
 	"LSG" : "Louis-Segond",

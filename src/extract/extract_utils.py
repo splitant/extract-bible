@@ -1,7 +1,6 @@
 from pyquery import PyQuery as pq
 from lxml import etree
 import urllib
-import re
 
 class ExtractUtils:
 
@@ -30,18 +29,48 @@ class ExtractUtils:
     def _getUrl(self, str_subject):
         return self.URL_BASE_PATTERN.replace('<pattern>', str_subject)
 
-    def extractBibleVersions(self):
+    def extractAndInitBibleVersions(self):
         d = pq(url=self._getUrl('genese'))
         bibleVersionsLinksHTML = d('#nav-versions a')
 
         for linkHTML in bibleVersionsLinksHTML.items():
             version_name = linkHTML.text()
 
-            last_part_link = linkHTML.attr['href'].split('-')
-            """ TODO : split link + last part split '.html' """
-            version_key = 
-            self.bibleVersions[linkHTML.attr['href']] = linkHTML.text()
+            link_parts = linkHTML.attr['href'].split('-')
+            last_part_link = link_parts[-1]
+            version_key = last_part_link[:last_part_link.index('.html')]
 
-        bibleVersionsLinksHTML.each(lambda e: self.bibleVersions[e.attr['href']] = e.text())
-        result = re.search('asdf=5;(.*)123jasd', s)
-print(result.group(1))
+            self._bibleVersions[version_key] = version_name
+
+    def extractAndInitBibleBooks(self):
+        d = pq(url=self._getUrl('genese'))
+        bibleBooksLinksHTML = d(
+            '#modal-book-selector .modal-body .list-group a[data-book-id]')
+        
+        for linkHTML in bibleBooksLinksHTML.items():
+            version_name = linkHTML.text()
+
+            link_parts = linkHTML.attr['href'].split('/')
+            last_part_link = link_parts[-1]
+            version_key = last_part_link[:last_part_link.index('.html')]
+
+            self._bibleBooks[version_key] = version_name
+
+    def extractBibleVerses(self, version, book, chapter):
+        pattern_value = book + '-' + chapter + '-' + version
+
+        try:
+            d = pq(url=self._getUrl(pattern_value))
+
+            verses = dict()
+            bibleVerses = d('.list-verses .verse')
+
+            for bibleVerse in bibleVerses:
+                number = bibleVerse.find('.num').text()
+                verse = bibleVerse.find('.content').text()
+
+                verses[number] = verse
+
+            return verses
+        except:
+            return None

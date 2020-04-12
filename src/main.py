@@ -1,8 +1,10 @@
-from pyquery import PyQuery as pq
-from lxml import etree
-import urllib
+#!/usr/bin/python
+
+from extract.extract_bible import *
 
 if __name__ == "__main__":
-    d = pq(url='https://emcitv.com/bible/genese-segond_21.html')
-    p = d("#book-selector")
-    print(p.text())
+    extract = ExtractProcess()
+    extract.createBibleDirectory()
+    extract.createBibleVersionsJSON()
+    extract.createBibleBooksJSON()
+    extract.processExtract()

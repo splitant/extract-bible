@@ -4,7 +4,8 @@ directory <book_bible> :
 	JSON file <genese.json> :
 {
     "name": "Genese",
-    "code_name_book": "LSG",
+    "version_book": "Louis segond",
+    "code_version_book": "LSG",
     "chapters": {
         "1": {
             "1": "Lorem ispum sit amet lorem ipsum lorem.",

@@ -13,8 +13,8 @@ class ExtractUtils:
     URL_BASE_PATTERN = 'https://emcitv.com/bible/<pattern>.html'
 
     def __init__(self):
-        self.extractAndInitBibleVersions()
-        self.extractAndInitBibleBooks()
+        self._bibleVersions = dict()
+        self._bibleBooks = dict()
 
     @property
     def bibleVersions(self):
@@ -36,7 +36,6 @@ class ExtractUtils:
         return self.URL_BASE_PATTERN.replace('<pattern>', str_subject)
 
     def extractAndInitBibleVersions(self):
-        self._bibleVersions = dict()
         d = pq(url=self._getUrl('genese'))
         bibleVersionsLinksHTML = d('#nav-versions a')
 
@@ -50,7 +49,6 @@ class ExtractUtils:
             self._bibleVersions[version_key] = version_name
 
     def extractAndInitBibleBooks(self):
-        self._bibleBooks = dict()
         d = pq(url=self._getUrl('genese'))
         bibleBooksLinksHTML = d(
             '#modal-book-selector .modal-body .list-group a[data-book-id]')
@@ -82,12 +80,48 @@ class ExtractUtils:
         finally:
             return verses
 
+class ExtractUtilsAdditional(ExtractUtils):
+
+    URL_BASE_PATTERN = 'https://lire.la-bible.net/lecture/<pattern>'
+
+    def __init__(self, bible_books):
+        super(ExtractUtilsAdditional, self).__init__()
+
+        self._bibleVersions['Colombe'] = 'La Colombe'
+        self._bibleVersions['PDV'] = 'La Bible Parole de Vie'
+        self._bibleVersions['RVR'] = 'Reina-Valera'
+
+        self._bibleBooks = bible_books
+    
+    def extractBibleVerses(self, version, book, chapter):
+        pattern_value = book.replace('-', '+') + '/' + str(chapter) + '/' + version
+
+        verses = dict()
+        try:
+            d = pq(url=self._getUrl(pattern_value))
+            bibleVerses = d('.list-verses .verse')
+
+            for bibleVerse in bibleVerses.items():
+                number = bibleVerse.find('.num').text()
+                verse = bibleVerse.find('.content').text()
+
+                verses[number] = verse
+        except:
+            return False
+        finally:
+            return verses
+
 
 class ExtractProcess:
-    SOURCE_DIRECTORY = '../bible'
+    SOURCE_DIRECTORY = 'bible'
 
     def __init__(self):
         self._extractUtils = ExtractUtils()
+        self._extractUtils.extractAndInitBibleVersions()
+        self._extractUtils.extractAndInitBibleBooks()
+
+        self._extractUtilsAddtionnal = ExtractUtilsAdditional(
+            self._extractUtils.bibleBooks)
 
     def createBibleDirectory(self):
         try:
@@ -99,8 +133,12 @@ class ExtractProcess:
 
     def createBibleVersionsJSON(self):
         file_path = self.SOURCE_DIRECTORY + '/bible_versions.json'
+
+        full_bible_versions = {
+            **(self._extractUtils.bibleVersions), **(self._extractUtilsAddtionnal.bibleVersions)}
+
         with open(file_path, 'w', encoding='utf8') as json_file:
-            json.dump(self._extractUtils.bibleVersions, json_file, ensure_ascii=False)
+            json.dump(full_bible_versions, json_file, ensure_ascii=False)
         print('File %s is created' % file_path)
 
     def createBibleBooksJSON(self):
@@ -110,37 +148,38 @@ class ExtractProcess:
         print('File %s is created' % file_path)
 
     def processExtract(self):
-        for key_version, value_version in self._extractUtils.bibleVersions.items():
-            path_directory = self.SOURCE_DIRECTORY + '/' + key_version
-            try:
-                os.makedirs(path_directory, exist_ok=True)
-            except:
-                print('Creation of the directory %s failed' % path_directory)
-            else:
-                for key_book, value_book in self._extractUtils.bibleBooks.items():
-                    book_json_array = dict()
+        for extract in [self._extractUtils, self._extractUtilsAddtionnal]:
+            for key_version, value_version in extract.bibleVersions.items():
+                path_directory = self.SOURCE_DIRECTORY + '/' + key_version
+                try:
+                    os.makedirs(path_directory, exist_ok=True)
+                except:
+                    print('Creation of the directory %s failed' % path_directory)
+                else:
+                    for key_book, value_book in extract.bibleBooks.items():
+                        book_json_array = dict()
 
-                    book_json_array['name'] = value_book
-                    book_json_array['version_book'] = value_version
-                    book_json_array['code_version_book'] = key_version
+                        book_json_array['name'] = value_book
+                        book_json_array['version_book'] = value_version
+                        book_json_array['code_version_book'] = key_version
 
-                    chapter_num = 1
-                    chapter = self._extractUtils.extractBibleVerses(key_version, key_book, chapter_num)
+                        chapter_num = 1
+                        chapter = extract.extractBibleVerses(key_version, key_book, chapter_num)
 
-                    print("\nProcessing [%s|%s]" %(value_version, value_book))
-                    time_begin = time.perf_counter()
-                    if (chapter):
-                        book_json_array['chapters'] = dict()
+                        print("\nProcessing [%s|%s]" %(value_version, value_book))
+                        time_begin = time.perf_counter()
+                        if (chapter):
+                            book_json_array['chapters'] = dict()
 
-                    while (chapter):
-                        book_json_array['chapters'][chapter_num] = chapter
-                        chapter_num = chapter_num + 1 
-                        chapter = self._extractUtils.extractBibleVerses(key_version, key_book, chapter_num)
-                    
-                    with open(path_directory + '/' + key_book + '.json', 'w', encoding='utf8') as json_file:
-                        json.dump(book_json_array, json_file, ensure_ascii=False)
+                        while (chapter):
+                            book_json_array['chapters'][chapter_num] = chapter
+                            chapter_num = chapter_num + 1 
+                            chapter = extract.extractBibleVerses(key_version, key_book, chapter_num)
+                        
+                        with open(path_directory + '/' + key_book + '.json', 'w', encoding='utf8') as json_file:
+                            json.dump(book_json_array, json_file, ensure_ascii=False)
 
-                    time_end = time.perf_counter()
-                    print("[%s|%s] processed" %(value_version, value_book))
-                    print(f"Time duration : {time_end - time_begin:0.2f} seconds")
-                    
+                        time_end = time.perf_counter()
+                        print("[%s|%s] processed" %(value_version, value_book))
+                        print(f"Time duration : {time_end - time_begin:0.2f} seconds")
+                        

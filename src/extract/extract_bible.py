@@ -94,16 +94,22 @@ class ExtractUtilsAdditional(ExtractUtils):
         self._bibleBooks = bible_books
     
     def extractBibleVerses(self, version, book, chapter):
+
+        if (book == 'habakuk'):
+            book = 'habacuc'
+
         pattern_value = book.replace('-', '+') + '/' + str(chapter) + '/' + version
 
         verses = dict()
         try:
             d = pq(url=self._getUrl(pattern_value))
-            bibleVerses = d('.list-verses .verse')
+            bibleVerses = d('li[rel=' + version + '] .zone_versets .verset')
 
             for bibleVerse in bibleVerses.items():
-                number = bibleVerse.find('.num').text()
-                verse = bibleVerse.find('.content').text()
+                number = bibleVerse.find('.reference').text()
+
+                bibleVerse.remove('a')
+                verse = bibleVerse.text()
 
                 verses[number] = verse
         except:
